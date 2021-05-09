@@ -374,7 +374,14 @@ GRANT ALL ON SCHEMA rebrain_portal TO rebrain_portal;
 
 ALTER DEFAULT PRIVILEGES FOR ROLE root IN SCHEMA public REVOKE ALL ON TABLES  FROM root;
 ALTER DEFAULT PRIVILEGES FOR ROLE root IN SCHEMA public GRANT SELECT ON TABLES  TO backup;
-ALTER DEFAULT PRIVILEGES FOR ROLE root IN SCHEMA public GRANT SELECT ON TABLES  TO rebrain_group_select_access;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: rebrain_group_select_access
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE rebrain_group_select_access IN SCHEMA public REVOKE ALL ON TABLES  FROM rebrain_group_select_access;
+ALTER DEFAULT PRIVILEGES FOR ROLE rebrain_group_select_access IN SCHEMA public GRANT SELECT ON TABLES  TO rebrain_group_select_access;
 
 
 --

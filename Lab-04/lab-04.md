@@ -1,4 +1,4 @@
-scp rebrain_courses_db.sql root@188.166.164.183:/tmp
+scp rebrain_courses_db.sql root@167.172.185.71:/tmp
 
 sudo apt update && apt -y install vim bash-completion wget
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -36,7 +36,7 @@ CREATE ROLE backup;
 psql -U root -h 127.0.0.1 -p 5432 rebrain_courses_db
 
 GRANT USAGE ON SCHEMA public TO rebrain_admin;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO backup;
+ALTER DEFAULT PRIVILEGES FOR USER rebrain_admin IN SCHEMA public GRANT SELECT ON TABLES TO backup;
 
 psql -U rebrain_admin -h 127.0.0.1 -p 5432 rebrain_courses_db;
 
@@ -56,7 +56,7 @@ psql -U root -h 127.0.0.1 -p 5432 rebrain_courses_db
 
 CREATE ROLE rebrain_group_select_access;
 GRANT USAGE ON SCHEMA public TO rebrain_group_select_access;
-ALTER DEFAULT privileges IN SCHEMA public GRANT SELECT ON TABLES TO rebrain_group_select_access;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO rebrain_group_select_access;
 
 CREATE ROLE rebrain_user;
 GRANT rebrain_group_select_access TO rebrain_user;
