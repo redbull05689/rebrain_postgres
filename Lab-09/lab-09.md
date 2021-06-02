@@ -1,7 +1,7 @@
-apt update && apt -y install vim bash-completion wget make
+
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | tee  /etc/apt/sources.list.d/pgdg.list
-apt update && apt install postgresql-13 postgresql-client-13 -y
+apt update && apt install postgresql-13 postgresql-client-13 prometheus-postgres-exporter vim bash-completion wget make adduser libfontconfig1 -y
 
 systemctl enable postgresql && systemctl status postgresql
 
@@ -49,7 +49,7 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['localhost:9100']
-  - job_name: postgresql
+  - job_name: 'postgresql'
     static_configs:
       - targets: ['localhost:9187']
         labels:
@@ -69,27 +69,24 @@ User=prometheus
 Group=prometheus
 Type=simple
 ExecStart=/usr/local/bin/prometheus \
-    --config.file /etc/prometheus/prometheus.yml \ 
-    --storage.tsdb.path /var/lib/prometheus/ \
-    --web.console.templates=/etc/prometheus/consoles \
-    --web.console.libraries=/etc/prometheus/console_libraries
+  --config.file /etc/prometheus/prometheus.yml \
+  --storage.tsdb.path /var/lib/prometheus/ \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries
 
 [Install]
 WantedBy=multi-user.target
 
 systemctl daemon-reload
-systemctl start prometheus
-systemctl enable prometheus
+systemctl start prometheus && systemctl enable prometheus
 
-apt-get install -y adduser libfontconfig1
+
 wget https://dl.grafana.com/oss/release/grafana_7.3.7_amd64.deb
 dpkg -i grafana_7.3.7_amd64.deb
 
-systemctl start grafana-server
-systemctl enable grafana-server
+systemctl start grafana-server && systemctl enable grafana-server
 
-cd /tmp
-curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
 
 tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz
 
@@ -114,37 +111,16 @@ WantedBy=multi-user.target
 
 
 systemctl daemon-reload
-systemctl start node_exporter
-systemctl enable node_exporter
+systemctl start node_exporter && systemctl enable node_exporter
 
-wget https://github.com/prometheus-community/postgres_exporter/releases/download/v0.9.0/postgres_exporter-0.9.0.linux-amd64.tar.gz -O - | tar -xzv -C /tmp
-cp /tmp/postgres_exporter-0.9.0.linux-amd64/postgres_exporter /usr/local/bin/prometheus-postgres-exporter
+  vi  /etc/default/prometheus-postgres-exporter
 
-
-chown -R postgres:postgres /usr/local/bin/prometheus-postgres-exporter
-
-    vi /etc/systemd/system/prometheus-postgres-exporter.service
-[Unit]
-Description=Prometheus PostgreSQL Exporter
-After=network.target
-
-[Service]
-Type=simple
-Restart=always
-User=postgres
-Group=postgres
-Environment=DATA_SOURCE_NAME="user=postgres host=/var/run/postgresql/ sslmode=disable"
-ExecStart=/usr/local/bin/prometheus-postgres-exporter
-[Install]
-WantedBy=multi-user.target
+DATA_SOURCE_NAME="postgresql://rebrain_monitoring:postgres@127.0.0.1:5432/rebrain_courses_db?sslmode=disable"
 
 
-systemctl daemon-reload && systemctl start prometheus-postgres-exporter.service && systemctl enable prometheus-postgres-exporter.service
+systemctl start prometheus-postgres-exporter.service && systemctl enable prometheus-postgres-exporter.service
 
+systemctl restart prometheus && systemctl restart prometheus-postgres-exporter
 
-
-
-
-
-
-https://mcs.mail.ru/help/ru_RU/cases-monitoring/case-psql-exporter
+pgbench -i -U rebrain_monitoring -h localhost rebrain_courses_db 
+pgbench -h localhost -U rebrain_monitoring -p 5432 -d rebrain_courses_db -c 50 -j 5 -T 120
