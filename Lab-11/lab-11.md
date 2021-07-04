@@ -8,8 +8,8 @@ systemctl enable postgresql-13 && systemctl start postgresql-13 && systemctl sta
 
 su postgres
 psql
-CREATE USER root WITH SUPERUSER PASSWORD 'postgres';
-CREATE DATABASE pgbench WITH OWNER root;
+CREATE USER demo WITH SUPERUSER PASSWORD 'slfjdfv23434GVGV#4VRTY!!';
+CREATE DATABASE demo_0630 WITH OWNER demo;
 CREATE DATABASE root WITH OWNER root;
 
 cp /usr/pgsql-13/bin/pgbench /usr/bin
